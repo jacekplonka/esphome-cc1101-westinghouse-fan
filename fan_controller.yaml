@@ -1,0 +1,321 @@
+# ============================================================
+# ESPHome RF Fan Controller — CC1101 @ 433.92 MHz ASK/OOK
+# ============================================================
+# Protocol: 29-bit messages  (20-bit device address + 9-bit command)
+#
+# Set the six GPIO substitutions and two 20-bit addresses to match your setup.
+# ============================================================
+
+substitutions:
+  fan_1_name: "Office Fan"
+  fan_2_name: "Bedroom Fan"
+  fan_1_address: "0x94120"
+  fan_2_address: "0x64120"
+  cc1101_sck_pin: "18" # SCK
+  cc1101_miso_pin: "19" # MISO
+  cc1101_mosi_pin: "23" # MOSI
+  cc1101_cs_pin: "5" # CSN
+  cc1101_gdo0_pin: "25" # TX data
+  cc1101_gdo2_pin: "26" # RX input
+
+esphome:
+  name: fan-controller
+  friendly_name: RF Fan Controller
+
+esp32:
+  board: esp32dev
+  framework:
+    type: arduino
+logger:
+
+external_components:
+  - source:
+      type: local
+      path: components
+    components: [cc1101_fan_controller]
+
+cc1101_fan_controller:
+  id: fan_ctrl
+  sck_pin: ${cc1101_sck_pin}
+  miso_pin: ${cc1101_miso_pin}
+  mosi_pin: ${cc1101_mosi_pin}
+  cs_pin: ${cc1101_cs_pin}
+  gdo0_pin: ${cc1101_gdo0_pin}
+  gdo2_pin: ${cc1101_gdo2_pin}
+  fan_addresses: [${fan_1_address}, ${fan_2_address}]
+  fan_1_id: my_fan
+  fan_2_id: fan_64120
+  light_1_id: office_fan_light_state
+  light_2_id: bedroom_fan_light_state
+  last_remote_text_id: last_remote_command_text
+  last_command_text_id: last_fan_command_text
+  discovered_address_text_id: discovered_fan_address_text
+  discovery_switch_id: fan_address_discovery
+  fan_1_buttons:
+    - office_light_toggle_button
+    - office_color_temperature_button
+    - office_direction_button
+    - office_dimmer_button
+    - office_brighter_button
+    - office_max_brightness_button
+    - office_min_brightness_button
+  fan_2_buttons:
+    - bedroom_light_toggle_button
+    - bedroom_color_temperature_button
+    - bedroom_direction_button
+    - bedroom_dimmer_button
+    - bedroom_brighter_button
+    - bedroom_max_brightness_button
+    - bedroom_min_brightness_button
+  persisted_values:
+    - dimmer_nibble
+    - brighter_nibble
+    - color_temperature_nibble
+    - fan_faster_cursor_v2
+    - slower_nibble
+    - light_on_nibble
+    - dimmer_nibble_2
+    - brighter_nibble_2
+    - color_temperature_nibble_2
+    - fan_2_faster_cursor_v2
+    - slower_nibble_2
+    - fan_2_light_cursor_v2
+    - last_remote_address
+    - last_remote_command
+    - last_fan_command
+    - discovered_fan_address
+    - fan_power_state_v2
+    - fan_speed_state_v2
+    - light_state_v2
+    - fan_2_power_state_v2
+    - fan_2_speed_state_v2
+    - fan_2_light_state_v2
+
+api:
+  encryption:
+    key: !secret fan_controller__encryption_key
+ota:
+  - platform: esphome
+    encryption:
+
+wifi:
+  ssid: !secret wifi_ssid # TODO: Type in your WiFi SSID
+  password: !secret wifi_password # TODO: Type in your WiFi password
+  ap:
+    ssid: "Fan-Controller-AP"
+    password: !secret fan_controller__fallback_ap_password
+
+captive_portal:
+
+web_server:
+  port: 80
+
+text_sensor:
+  - platform: template
+    id: last_remote_command_text
+    name: "Fan Controller Last Remote Command"
+    entity_category: diagnostic
+    update_interval: never
+  - platform: template
+    id: last_fan_command_text
+    name: "Fan Controller Last Command Code"
+    entity_category: diagnostic
+    update_interval: never
+  - platform: template
+    id: discovered_fan_address_text
+    name: "Discovered Fan Address"
+    entity_category: diagnostic
+    update_interval: never
+
+fan:
+  - platform: template
+    id: my_fan
+    name: "${fan_1_name}"
+    speed_count: 6
+    restore_mode: NO_RESTORE
+  - platform: template
+    id: fan_64120
+    name: "${fan_2_name}"
+    speed_count: 6
+    restore_mode: NO_RESTORE
+
+binary_sensor:
+  - platform: template
+    id: office_fan_light_state
+    name: "${fan_1_name} Light State"
+    device_class: light
+  - platform: template
+    id: bedroom_fan_light_state
+    name: "${fan_2_name} Light State"
+    device_class: light
+
+# Turn on to listen for a different fan's remote. Discovery accepts a new
+# address after it sees the same frame twice, then turns itself off.
+switch:
+  - platform: template
+    id: fan_address_discovery
+    name: "Fan Address Discovery"
+    entity_category: diagnostic
+    optimistic: true
+
+# ============================================================
+# FAN CONTROLS
+# ============================================================
+# Fan addresses and RF command sequences are defined in
+# cc1101_fan_controller.h. The globals below are persistent state only.
+# ============================================================
+
+globals:
+  # Each value stores the next low nibble to send. Initial values select the
+  # lowest valid code in each cycle; the listener resyncs them from the remote.
+  - id: dimmer_nibble
+    type: int
+    restore_value: yes
+    initial_value: '0'
+  - id: brighter_nibble
+    type: int
+    restore_value: yes
+    initial_value: '1'
+  - id: color_temperature_nibble
+    type: int
+    restore_value: yes
+    initial_value: '3'
+  # Versioned IDs reset the old incorrect cycle seed. The receiver will
+  # resynchronize these cursors from the next command sent by the remote.
+  - id: fan_faster_cursor_v2
+    type: int
+    restore_value: yes
+    initial_value: '6'
+  - id: slower_nibble
+    type: int
+    restore_value: yes
+    initial_value: '0'
+  - id: light_on_nibble
+    type: int
+    restore_value: yes
+    initial_value: '5'
+  - id: dimmer_nibble_2
+    type: int
+    restore_value: yes
+    initial_value: '0'
+  - id: brighter_nibble_2
+    type: int
+    restore_value: yes
+    initial_value: '1'
+  - id: color_temperature_nibble_2
+    type: int
+    restore_value: yes
+    initial_value: '3'
+  - id: fan_2_faster_cursor_v2
+    type: int
+    restore_value: yes
+    initial_value: '6'
+  - id: slower_nibble_2
+    type: int
+    restore_value: yes
+    initial_value: '0'
+  - id: fan_2_light_cursor_v2
+    type: int
+    restore_value: yes
+    initial_value: '5'
+  - id: last_remote_address
+    type: int
+    restore_value: yes
+    initial_value: '-1'
+  - id: last_remote_command
+    type: int
+    restore_value: yes
+    initial_value: '-1'
+  - id: last_fan_command
+    type: int
+    restore_value: yes
+    initial_value: '-1'
+  - id: discovered_fan_address
+    type: int
+    restore_value: yes
+    initial_value: '-1'
+  # The fans do not report their state. Start with an off baseline, then
+  # persist state inferred from commands sent by HA or the original remote.
+  - id: fan_power_state_v2
+    type: int
+    restore_value: yes
+    initial_value: '0'
+  - id: fan_speed_state_v2
+    type: int
+    restore_value: yes
+    initial_value: '0'
+  - id: light_state_v2
+    type: int
+    restore_value: yes
+    initial_value: '0'
+  - id: fan_2_power_state_v2
+    type: int
+    restore_value: yes
+    initial_value: '0'
+  - id: fan_2_speed_state_v2
+    type: int
+    restore_value: yes
+    initial_value: '0'
+  - id: fan_2_light_state_v2
+    type: int
+    restore_value: yes
+    initial_value: '0'
+
+# Button order in each fan group matches the action table in the C++ controller.
+button:
+  - platform: template
+    id: office_light_toggle_button
+    name: "${fan_1_name} - Light Toggle"
+    icon: "mdi:lightbulb-on"
+  - platform: template
+    id: office_color_temperature_button
+    name: "${fan_1_name} - Light Color Temperature"
+    icon: "mdi:thermometer"
+  - platform: template
+    id: office_direction_button
+    name: "${fan_1_name} - Direction"
+    icon: "mdi:swap-vertical"
+  - platform: template
+    id: office_dimmer_button
+    name: "${fan_1_name} - Dimmer"
+    icon: "mdi:brightness-6"
+  - platform: template
+    id: office_brighter_button
+    name: "${fan_1_name} - Brighter"
+    icon: "mdi:brightness-7"
+  - platform: template
+    id: office_max_brightness_button
+    name: "${fan_1_name} - Max Brightness (7s)"
+    icon: "mdi:brightness-7"
+  - platform: template
+    id: office_min_brightness_button
+    name: "${fan_1_name} - Min Brightness (7s)"
+    icon: "mdi:brightness-5"
+  - platform: template
+    id: bedroom_light_toggle_button
+    name: "${fan_2_name} - Light Toggle"
+    icon: "mdi:lightbulb-on"
+  - platform: template
+    id: bedroom_color_temperature_button
+    name: "${fan_2_name} - Light Color Temperature"
+    icon: "mdi:thermometer"
+  - platform: template
+    id: bedroom_direction_button
+    name: "${fan_2_name} - Direction"
+    icon: "mdi:swap-vertical"
+  - platform: template
+    id: bedroom_dimmer_button
+    name: "${fan_2_name} - Dimmer"
+    icon: "mdi:brightness-6"
+  - platform: template
+    id: bedroom_brighter_button
+    name: "${fan_2_name} - Brighter"
+    icon: "mdi:brightness-7"
+  - platform: template
+    id: bedroom_max_brightness_button
+    name: "${fan_2_name} - Max Brightness (7s)"
+    icon: "mdi:brightness-7"
+  - platform: template
+    id: bedroom_min_brightness_button
+    name: "${fan_2_name} - Min Brightness (7s)"
+    icon: "mdi:brightness-5"

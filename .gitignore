@@ -1,0 +1,9 @@
+.esphome/
+build/
+secrets.yaml
+*.bin
+*.elf
+*.map
+__pycache__/
+*.py[cod]
+.vscode/

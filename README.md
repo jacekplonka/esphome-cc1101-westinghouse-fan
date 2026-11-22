@@ -40,7 +40,7 @@ Use 3.3 V for the CC1101. Select GPIOs supported by your particular ESP32 board 
 
 ### Install from GitHub
 
-The example YAML loads the component from `jacekplonka/esphome-cc1101-westinghouse-fan` using ESPHome's [external components feature](https://esphome.io/components/external_components/). Once the repository is public on GitHub:
+The example YAML loads the component from [`jacekplonka/esphome-cc1101-westinghouse-fan`](https://github.com/jacekplonka/esphome-cc1101-westinghouse-fan) using ESPHome's [external components feature](https://esphome.io/components/external_components/):
 
 1. In Home Assistant, open ESPHome Device Builder and create a new ESP32 device or open your existing fan-controller YAML.
 2. Copy the contents of `fan_controller.yaml` into that device configuration.
@@ -51,9 +51,9 @@ The example YAML loads the component from `jacekplonka/esphome-cc1101-westinghou
 
 The external component is downloaded by ESPHome during configuration validation/build, so no C++ files need to be copied into the Home Assistant configuration directory.
 
-### Use a local checkout before GitHub publication
+### Use a local checkout for development
 
-Until the repository is available publicly, copy `components/` into `/config/esphome/components/`, copy `fan_controller.yaml` into `/config/esphome/`, and temporarily use this source block:
+If you are working from a local checkout or need an offline build, copy `components/` into `/config/esphome/components/`, copy `fan_controller.yaml` into `/config/esphome/`, and temporarily use this source block:
 
 ```yaml
 external_components:
@@ -63,7 +63,7 @@ external_components:
     components: [cc1101_fan_controller]
 ```
 
-Restore the GitHub source block from the example after the repository is public. For a tagged release, replace `@main` with the tag, for example `@v1.0.0`.
+Restore the GitHub source block from the example after the local build. For a tagged release, replace `@main` with the tag, for example `@v1.0.0`.
 
 ## Secrets
 
@@ -129,4 +129,4 @@ Issues and pull requests should include the ESPHome version, board model, CC1101
 
 ## A word from a human
 
-My contribution to the work done by Shai and David is entirely AI-generated. I was merely a flesh clicking the buttons on the physical remote to discover what commands are there. It supports two fans, because I needed it to support two fans. If you want more or less, feel free to fork or improve the code in this repo. I tested it on Westinghouse Lighting 7316140 ceiling fans, it works most of the time. Sometimes you have to click twice, because it guessed the wrong code. The state is often wrong, as it can only guess the current status based on the commands sent. 
+My contribution to the work done by Shai and David is entirely AI-generated. I was merely a flesh clicking the buttons on the physical remote to discover what commands are there. It supports two fans, because I needed it to support two fans. If you want more or less, feel free to fork or improve the code in this repo. I tested it on Westinghouse Lighting 7316140 ceiling fans, it works most of the time. Sometimes you have to click twice, because it guessed the wrong code. The state is often wrong, as it can only guess the current status based on the commands sent.

@@ -2,9 +2,9 @@
 
 An ESPHome external component for controlling and listening to up to two **Westinghouse Lighting 7316140 ceiling fans** over their 433.92 MHz, 29-bit OOK remote protocol. It exposes native ESPHome fan, button, switch, binary sensor, and diagnostic text sensor entities for Home Assistant.
 
-The RF implementation and code generation live in `components/cc1101_fan_controller/`. The YAML file is an example configuration for the two known fan addresses. Change names, addresses, and GPIOs in its `substitutions` and `cc1101_fan_controller` block.
+**Component repository:** [jacekplonka/esphome-cc1101-westinghouse-fan](https://github.com/jacekplonka/esphome-cc1101-westinghouse-fan).
 
-> **License status:** the original ESPHome implementation this work builds on has no license file. This repository therefore has no `LICENSE` file yet. See [LICENSE_STATUS.md](LICENSE_STATUS.md) before publishing or redistributing it.
+The RF implementation and code generation live in `components/cc1101_fan_controller/`. The YAML file is an example configuration for the two known fan addresses. Change names, addresses, and GPIOs in its `substitutions` and `cc1101_fan_controller` block.
 
 ## Features
 
@@ -112,15 +112,15 @@ The controller also exposes the address-discovery switch and three diagnostic te
 
 ## Important limits
 
-- One CC1101 radio controller supports up to two fan addresses.
 - The example uses 433.92 MHz ASK/OOK and requires the Arduino framework because the selected CC1101 library is Arduino-based.
 - The receiver is continuously active except during transmissions; the controller cannot receive a remote frame while it is sending.
 - The fan protocol provides no response frame for state confirmation.
-- The upstream `CC1101-ESP-Arduino` library is fetched as an ESPHome build dependency; it is not copied into this repository.
+- Yes, the `CC1101-ESP-Arduino` library is fetched as an ESPHome build dependency. The component registers it with `cg.add_library()` in [`components/cc1101_fan_controller/__init__.py`](components/cc1101_fan_controller/__init__.py); ESPHome then adds it to the generated build. That is why it is not listed in the YAML. The configured dependency is [Jacek Plonka's fork](https://github.com/jacekplonka/CC1101-ESP-Arduino), based on the [upstream library by David W. (`wischbgr`)](https://github.com/wischbgr/CC1101-ESP-Arduino); it is not bundled in this repository.
 
 ## Credits
 
-See [CREDITS.md](CREDITS.md) for attribution to the original ESPHome implementation and the CC1101 driver maintainer.
+- **Shai Dvash** authored the original ESPHome fan-controller migration and initial controller implementation in [esp32-cc1101-rf-caprep](https://github.com/sha1cybr/esp32-cc1101-rf-caprep). This component descends from that work.
+- **David W. (`wischbgr`)** authored and maintains the upstream [CC1101-ESP-Arduino library](https://github.com/wischbgr/CC1101-ESP-Arduino). This component uses [Jacek Plonka's fork](https://github.com/jacekplonka/CC1101-ESP-Arduino) as its build dependency; see the upstream repository for license and notices.
 
 ## Contributing
 

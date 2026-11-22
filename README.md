@@ -125,3 +125,8 @@ The controller also exposes the address-discovery switch and three diagnostic te
 ## Contributing
 
 Issues and pull requests should include the ESPHome version, board model, CC1101 wiring, fan address, and relevant logs. Do not include Wi-Fi passwords, API keys, or other secrets.
+
+
+## A word from a human
+
+My contribution to the work done by Shai and David is entirely AI-generated. I was merely a flesh clicking the buttons on the physical remote to discover what commands are there. It supports two fans, because I needed it to support two fans. If you want more or less, feel free to fork or improve the code in this repo. I tested it on Westinghouse Lighting 7316140 ceiling fans, it works most of the time. Sometimes you have to click twice, because it guessed the wrong code. The state is often wrong, as it can only guess the current status based on the commands sent. 

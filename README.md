@@ -1,4 +1,4 @@
-# ESPHome CC1101 Fan Controller
+# ESPHome CC1101 Westinghouse Fan
 
 An ESPHome external component for controlling and listening to up to two **Westinghouse Lighting 7316140 ceiling fans** over their 433.92 MHz, 29-bit OOK remote protocol. It exposes native ESPHome fan, button, switch, binary sensor, and diagnostic text sensor entities for Home Assistant.
 
@@ -38,43 +38,32 @@ Use 3.3 V for the CC1101. Select GPIOs supported by your particular ESP32 board 
 
 ## Install with Home Assistant ESPHome Device Builder
 
-### Local checkout
+### Install from GitHub
 
-This repository currently contains a local-path external component. ESPHome resolves the path relative to the YAML file, as described in its [external components guide](https://esphome.io/components/external_components/). In Home Assistant, use the File editor, Studio Code Server, Samba, or another way to access the ESPHome configuration directory (usually `/config/esphome`):
+The example YAML loads the component from `jacekplonka/esphome-cc1101-westinghouse-fan` using ESPHome's [external components feature](https://esphome.io/components/external_components/). Once the repository is public on GitHub:
 
-1. Copy the repository's `components` folder into `/config/esphome/components`.
-2. Copy `fan_controller.yaml` into `/config/esphome/`.
+1. In Home Assistant, open ESPHome Device Builder and create a new ESP32 device or open your existing fan-controller YAML.
+2. Copy the contents of `fan_controller.yaml` into that device configuration.
 3. Add the secrets shown below to `/config/esphome/secrets.yaml`.
-4. Open ESPHome Device Builder, choose **EDIT** for `fan_controller.yaml`, and set the names, addresses, and GPIOs near the top of the file.
+4. Edit the names, addresses, and GPIOs near the top of the YAML.
 5. Choose **INSTALL**. For a new board, connect USB and use the browser's serial installer. After the first flash, Device Builder can update it over the network.
 6. Accept the discovered ESPHome device in Home Assistant if prompted.
 
-The component block currently loads the local source from `components`. Keep that folder beside the YAML file in the ESPHome configuration directory.
+The external component is downloaded by ESPHome during configuration validation/build, so no C++ files need to be copied into the Home Assistant configuration directory.
 
-The resulting layout should be:
+### Use a local checkout before GitHub publication
 
-```text
-/config/esphome/
-├── fan_controller.yaml
-├── secrets.yaml
-└── components/
-    └── cc1101_fan_controller/
-        ├── __init__.py
-        └── cc1101_fan_controller.h
-```
-
-### Install from Git after publishing
-
-After this repository is pushed to a public Git remote, replace the local `external_components` block in `fan_controller.yaml` with:
+Until the repository is available publicly, copy `components/` into `/config/esphome/components/`, copy `fan_controller.yaml` into `/config/esphome/`, and temporarily use this source block:
 
 ```yaml
 external_components:
-  - source: github://jacekplonka/esphome-cc1101-fan-controller@main
+  - source:
+      type: local
+      path: components
     components: [cc1101_fan_controller]
-    refresh: 1d
 ```
 
-For a tagged release, replace `@main` with the tag, for example `@v1.0.0`. With this form, users only need the YAML configuration; ESPHome downloads the component source during validation/build.
+Restore the GitHub source block from the example after the repository is public. For a tagged release, replace `@main` with the tag, for example `@v1.0.0`.
 
 ## Secrets
 

@@ -29,10 +29,9 @@ esp32:
 logger:
 
 external_components:
-  - source:
-      type: local
-      path: components
+  - source: github://jacekplonka/esphome-cc1101-westinghouse-fan@main
     components: [cc1101_fan_controller]
+    refresh: 1d
 
 cc1101_fan_controller:
   id: fan_ctrl

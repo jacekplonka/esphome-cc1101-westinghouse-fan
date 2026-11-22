@@ -73,10 +73,11 @@ Create or edit `secrets.yaml` in the ESPHome configuration directory. Do not com
 wifi_ssid: "YOUR_WIFI_NAME"
 wifi_password: "YOUR_WIFI_PASSWORD"
 fan_controller__encryption_key: "YOUR_UNIQUE_32_BYTE_BASE64_KEY"
-fan_controller__fallback_ap_password: "A_UNIQUE_PASSWORD"
 ```
 
 Use a unique API encryption key per device. For a new device, generate one with `openssl rand -base64 32`; if Home Assistant already provisioned a key for this node, keep using that existing value. The OTA encryption block reuses the API key, following ESPHome's [OTA encryption configuration](https://esphome.io/components/ota/esphome/). The fallback access point is only available when the configured Wi-Fi cannot connect.
+
+Change the fallback access point password in `wifi.ap.password` in `fan_controller.yaml` before deployment. The fallback access point is only available when the configured Wi-Fi cannot connect.
 
 ## Configure names, addresses, and pins
 

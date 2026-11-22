@@ -3,7 +3,7 @@
 # ============================================================
 # Protocol: 29-bit messages  (20-bit device address + 9-bit command)
 #
-# Set the six GPIO substitutions and two 20-bit addresses to match your setup.
+# Set the six cc1101_*_pin substitutions below to match your wiring.
 # ============================================================
 
 substitutions:
@@ -21,6 +21,13 @@ substitutions:
 esphome:
   name: fan-controller
   friendly_name: RF Fan Controller
+  libraries:
+    - SPI
+
+external_components:
+  - source: github://jacekplonka/esphome-cc1101-westinghouse-fan@main
+    components: [cc1101_fan_controller]
+    refresh: 1d
 
 esp32:
   board: esp32dev
@@ -28,10 +35,24 @@ esp32:
     type: arduino
 logger:
 
-external_components:
-  - source: github://jacekplonka/esphome-cc1101-westinghouse-fan@main
-    components: [cc1101_fan_controller]
-    refresh: 1d
+api:
+  encryption:
+    key: !secret fan_controller__encryption_key
+ota:
+  - platform: esphome
+    encryption:
+
+wifi:
+  ssid: !secret wifi_ssid # TODO: Type in your WiFi SSID
+  password: !secret wifi_password # TODO: Type in your WiFi password
+  ap:
+    ssid: "Fan-Controller-AP"
+    password: "fan12345678"
+
+captive_portal:
+
+web_server:
+  port: 80
 
 cc1101_fan_controller:
   id: fan_ctrl
@@ -41,9 +62,9 @@ cc1101_fan_controller:
   cs_pin: ${cc1101_cs_pin}
   gdo0_pin: ${cc1101_gdo0_pin}
   gdo2_pin: ${cc1101_gdo2_pin}
-  fan_addresses: [${fan_1_address}, ${fan_2_address}]
-  fan_1_id: my_fan
-  fan_2_id: fan_64120
+  fan_addresses: ["${fan_1_address}", "${fan_2_address}"]
+  fan_1_id: fan_1
+  fan_2_id: fan_2
   light_1_id: office_fan_light_state
   light_2_id: bedroom_fan_light_state
   last_remote_text_id: last_remote_command_text
@@ -90,25 +111,6 @@ cc1101_fan_controller:
     - fan_2_speed_state_v2
     - fan_2_light_state_v2
 
-api:
-  encryption:
-    key: !secret fan_controller__encryption_key
-ota:
-  - platform: esphome
-    encryption:
-
-wifi:
-  ssid: !secret wifi_ssid # TODO: Type in your WiFi SSID
-  password: !secret wifi_password # TODO: Type in your WiFi password
-  ap:
-    ssid: "Fan-Controller-AP"
-    password: !secret fan_controller__fallback_ap_password
-
-captive_portal:
-
-web_server:
-  port: 80
-
 text_sensor:
   - platform: template
     id: last_remote_command_text
@@ -128,12 +130,12 @@ text_sensor:
 
 fan:
   - platform: template
-    id: my_fan
+    id: fan_1
     name: "${fan_1_name}"
     speed_count: 6
     restore_mode: NO_RESTORE
   - platform: template
-    id: fan_64120
+    id: fan_2
     name: "${fan_2_name}"
     speed_count: 6
     restore_mode: NO_RESTORE

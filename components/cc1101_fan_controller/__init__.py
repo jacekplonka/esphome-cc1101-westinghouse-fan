@@ -39,6 +39,18 @@ def _fixed_list(item_schema, length):
     return cv.All(cv.ensure_list(item_schema), cv.Length(min=length, max=length))
 
 
+def _fan_address(value):
+    # Accept both YAML integers and quoted decimal/hex substitutions, such as
+    # "0x94120". Quoting the substitution keeps ESPHome from parsing it as a
+    # string that the regular decimal int_range validator cannot convert.
+    if isinstance(value, str):
+        try:
+            value = int(value, 0)
+        except ValueError as err:
+            raise cv.Invalid("fan address must be a decimal or 0x-prefixed integer") from err
+    return cv.int_range(min=1, max=0xFFFFF)(value)
+
+
 def _validate_config(config):
     addresses = config[CONF_FAN_ADDRESSES]
     if addresses[0] == addresses[1]:
@@ -57,7 +69,7 @@ CONFIG_SCHEMA = cv.All(
             cv.Required(CONF_GDO0_PIN): cv.int_range(min=0, max=48),
             cv.Required(CONF_GDO2_PIN): cv.int_range(min=0, max=48),
             cv.Required(CONF_FAN_ADDRESSES): _fixed_list(
-                cv.int_range(min=1, max=0xFFFFF), 2
+                _fan_address, 2
             ),
             cv.Required(CONF_FAN_1_ID): cv.use_id(fan.Fan),
             cv.Required(CONF_FAN_2_ID): cv.use_id(fan.Fan),

@@ -1,6 +1,6 @@
 # ESPHome CC1101 Fan Controller
 
-An ESPHome external component for controlling and listening to up to two 433.92 MHz ceiling fans that use the 29-bit OOK protocol reverse-engineered for Pacific fan remotes. It exposes native ESPHome fan, button, switch, binary sensor, and diagnostic text sensor entities for Home Assistant.
+An ESPHome external component for controlling and listening to up to two **Westinghouse Lighting 7316140 ceiling fans** over their 433.92 MHz, 29-bit OOK remote protocol. It exposes native ESPHome fan, button, switch, binary sensor, and diagnostic text sensor entities for Home Assistant.
 
 The RF implementation and code generation live in `components/cc1101_fan_controller/`. The YAML file is an example configuration for the two known fan addresses. Change names, addresses, and GPIOs in its `substitutions` and `cc1101_fan_controller` block.
 
